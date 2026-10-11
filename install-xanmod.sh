@@ -111,6 +111,26 @@ is_deps_done() { command -v wget >/dev/null 2>&1 && command -v gpg >/dev/null 2>
 is_repo_done() { [ -f /etc/apt/sources.list.d/xanmod-release.list ]; }
 is_kernel_done() { dpkg -l 2>/dev/null | grep -q "^ii.*linux-image.*xanmod"; }
 
+step_uninstall_kernel() {
+    if ! is_kernel_done; then
+        echo "    未安装 XanMod 内核，无需卸载"
+        return
+    fi
+    if uname -r | grep -q xanmod; then
+        echo "    警告: 当前正在运行 XanMod 内核，卸载后重启会回到系统原生内核"
+    fi
+    echo "    将卸载以下包:"
+    dpkg -l | grep "^ii.*xanmod" | awk '{print "      " $2}'
+    read -rp "    确认卸载? [y/N] " cf
+    [[ "$cf" =~ ^[Yy]$ ]] || { echo "    已取消"; return; }
+    echo "==> 卸载 XanMod 内核"
+    PKGS=$(dpkg -l | grep "^ii.*xanmod" | awk '{print $2}')
+    # shellcheck disable=SC2086
+    DEBIAN_FRONTEND=noninteractive apt-get purge -y $PKGS
+    update-grub 2>/dev/null || true
+    echo "    卸载完成，重启后生效"
+}
+
 # ---------- 主菜单 ----------
 while true; do
     clear
@@ -139,15 +159,17 @@ while true; do
     echo "  2) 添加 XanMod APT 仓库$s2"
     echo "  3) 安装 XanMod 内核$s3"
     echo "  4) 检查内核更新"
-    echo "  5) 重启系统"
+    echo "  5) 卸载 XanMod 内核"
+    echo "  6) 重启系统"
     echo "  0) 退出"
-    read -rp "输入选项 [0-5]: " opt
+    read -rp "输入选项 [0-6]: " opt
     case "$opt" in
         1) step_install_deps ;;
         2) step_add_repo ;;
         3) step_install_kernel ;;
         4) step_check_update ;;
-        5) reboot ;;
+        5) step_uninstall_kernel ;;
+        6) reboot ;;
         0) exit 0 ;;
         *) echo "无效选项" ;;
     esac

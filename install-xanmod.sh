@@ -56,6 +56,12 @@ step_install_kernel() {
         echo "    检测到仓库未添加，先添加仓库"
         step_add_repo
     fi
+    # 已安装提示
+    if is_kernel_done; then
+        echo "    XanMod 内核已安装"
+        read -rp "    是否重新安装? [y/N] " re
+        [[ "$re" =~ ^[Yy]$ ]] || return 0
+    fi
     if [ "$FORCE_LTS" -eq 1 ]; then
         PKG="linux-xanmod-lts"
         echo "    Debian 12 只有 LTS 版，已自动选择"
@@ -100,6 +106,11 @@ step_check_update() {
     fi
 }
 
+# ---------- 状态检查 ----------
+is_deps_done() { command -v wget >/dev/null 2>&1 && command -v gpg >/dev/null 2>&1; }
+is_repo_done() { [ -f /etc/apt/sources.list.d/xanmod-release.list ]; }
+is_kernel_done() { dpkg -l 2>/dev/null | grep -q "linux-image.*xanmod"; }
+
 # ---------- 主菜单 ----------
 while true; do
     clear
@@ -108,7 +119,7 @@ while true; do
     if uname -r | grep -q xanmod; then
         echo " XanMod 内核: 已安装"
     else
-        if dpkg -l | grep -q "linux-image.*xanmod"; then
+        if is_kernel_done; then
             echo " XanMod 内核: 已安装但未运行 (重启后生效)"
         else
             echo " XanMod 内核: 未安装"
@@ -116,11 +127,17 @@ while true; do
     fi
     echo " 系统版本: $PRETTY"
     echo "========================================"
+
+    # 各步骤完成状态
+    s1=""; is_deps_done && s1=" (已完成)"
+    s2=""; is_repo_done && s2=" (已完成)"
+    s3=""; is_kernel_done && s3=" (已完成)"
+
     echo ""
     echo "请选择操作:"
-    echo "  1) 安装依赖工具"
-    echo "  2) 添加 XanMod APT 仓库"
-    echo "  3) 安装 XanMod 内核"
+    echo "  1) 安装依赖工具$s1"
+    echo "  2) 添加 XanMod APT 仓库$s2"
+    echo "  3) 安装 XanMod 内核$s3"
     echo "  4) 检查内核更新"
     echo "  5) 重启系统"
     echo "  0) 退出"

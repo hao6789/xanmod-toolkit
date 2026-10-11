@@ -131,6 +131,17 @@ step_uninstall_kernel() {
     echo "    卸载完成，重启后生效"
 }
 
+step_uninstall_self() {
+    local self
+    self=$(readlink -f "$0")
+    echo "    将删除脚本: $self"
+    read -rp "    确认删除? [y/N] " cf
+    [[ "$cf" =~ ^[Yy]$ ]] || { echo "    已取消"; return; }
+    rm -f "$self"
+    echo "    已删除"
+    exit 0
+}
+
 # ---------- 主菜单 ----------
 while true; do
     clear
@@ -160,16 +171,18 @@ while true; do
     echo "  3) 安装 XanMod 内核$s3"
     echo "  4) 检查内核更新"
     echo "  5) 卸载 XanMod 内核"
-    echo "  6) 重启系统"
+    echo "  6) 卸载本脚本"
+    echo "  7) 重启系统"
     echo "  0) 退出"
-    read -rp "输入选项 [0-6]: " opt
+    read -rp "输入选项 [0-7]: " opt
     case "$opt" in
         1) step_install_deps ;;
         2) step_add_repo ;;
         3) step_install_kernel ;;
         4) step_check_update ;;
         5) step_uninstall_kernel ;;
-        6) reboot ;;
+        6) step_uninstall_self ;;
+        7) reboot ;;
         0) exit 0 ;;
         *) echo "无效选项" ;;
     esac

@@ -144,7 +144,7 @@ step_uninstall_self() {
 
 # ---------- 主菜单 ----------
 while true; do
-    clear
+    clear 2>/dev/null || true
     echo "========================================"
     echo " 当前内核: $(uname -r)"
     if uname -r | grep -q xanmod; then

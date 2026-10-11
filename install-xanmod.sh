@@ -169,8 +169,8 @@ while true; do
     echo "  1) 安装依赖工具$s1"
     echo "  2) 添加 XanMod APT 仓库$s2"
     echo "  3) 安装 XanMod 内核$s3"
-    echo "  4) 检查内核更新"
-    echo "  5) 重启系统"
+    echo "  4) 重启系统"
+    echo "  5) 检查内核更新"
     echo "  6) 卸载 XanMod 内核"
     echo "  7) 卸载本脚本"
     echo "  0) 退出"
@@ -179,8 +179,8 @@ while true; do
         1) step_install_deps ;;
         2) step_add_repo ;;
         3) step_install_kernel ;;
-        4) step_check_update ;;
-        5) reboot ;;
+        4) reboot ;;
+        5) step_check_update ;;
         6) step_uninstall_kernel ;;
         7) step_uninstall_self ;;
         0) exit 0 ;;

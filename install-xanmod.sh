@@ -28,12 +28,16 @@ if has avx && has avx2 && has bmi1 && has bmi2 && has f16c && has fma && has lzc
     LEVEL=3
 fi
 
+# ---------- 全局变量 ----------
+LAST_MSG=""   # 上一步执行结果摘要，菜单里显示
+
 # ---------- 步骤函数 ----------
 step_install_deps() {
     echo "==> 安装依赖工具 (wget/gnupg/lsb-release)"
     apt-get update -qq
     apt-get install -y -qq wget gnupg lsb-release > /dev/null 2>&1
     echo "    完成"
+    LAST_MSG="安装依赖工具: 完成"
 }
 
 step_add_repo() {
@@ -48,6 +52,7 @@ step_add_repo() {
         | tee /etc/apt/sources.list.d/xanmod-release.list > /dev/null
     apt-get update -qq
     echo "    仓库添加完成"
+    LAST_MSG="添加仓库: 完成"
 }
 
 step_install_kernel() {
@@ -60,7 +65,10 @@ step_install_kernel() {
     if is_kernel_done; then
         echo "    XanMod 内核已安装"
         read -rp "    是否重新安装? [y/N] " re
-        [[ "$re" =~ ^[Yy]$ ]] || return 0
+        if [[ ! "$re" =~ ^[Yy]$ ]]; then
+            LAST_MSG="安装内核: 已安装，未重装"
+            return 0
+        fi
     fi
     if [ "$FORCE_LTS" -eq 1 ]; then
         PKG="linux-xanmod-lts"
@@ -83,11 +91,13 @@ step_install_kernel() {
     echo "    CPU 等级: x86-64-v$LEVEL"
     DEBIAN_FRONTEND=noninteractive apt-get install -y "${PKG}-x64v${LEVEL}"
     echo "    安装完成，重启后生效"
+    LAST_MSG="安装内核 ${PKG}-x64v${LEVEL}: 完成，重启后生效"
 }
 
 step_check_update() {
     if ! dpkg -l | grep -q "^ii.*linux-image.*xanmod"; then
         echo "    未安装 XanMod 内核，无需检查更新"
+        LAST_MSG="检查更新: 未安装 XanMod 内核"
         return
     fi
     echo "==> 检查 XanMod 内核更新"
@@ -95,6 +105,7 @@ step_check_update() {
     UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -i xanmod || true)
     if [ -z "$UPGRADABLE" ]; then
         echo "    已是最新版本，无可用更新"
+        LAST_MSG="检查更新: 已是最新版本"
         return
     fi
     echo "    发现可更新:"
@@ -103,6 +114,9 @@ step_check_update() {
     if [[ ! "$up" =~ ^[Nn]$ ]]; then
         apt-get install -y --only-upgrade $(echo "$UPGRADABLE" | cut -d/ -f1)
         echo "    升级完成，重启后生效"
+        LAST_MSG="检查更新: 已升级，重启后生效"
+    else
+        LAST_MSG="检查更新: 发现更新，未升级"
     fi
 }
 
@@ -114,6 +128,7 @@ is_kernel_done() { dpkg -l 2>/dev/null | grep -q "^ii.*linux-image.*xanmod"; }
 step_uninstall_kernel() {
     if ! is_kernel_done; then
         echo "    未安装 XanMod 内核，无需卸载"
+        LAST_MSG="卸载内核: 未安装，无需卸载"
         return
     fi
     if uname -r | grep -q xanmod; then
@@ -122,13 +137,18 @@ step_uninstall_kernel() {
     echo "    将卸载以下包:"
     dpkg -l | grep "^ii.*xanmod" | awk '{print "      " $2}'
     read -rp "    确认卸载? [y/N] " cf
-    [[ "$cf" =~ ^[Yy]$ ]] || { echo "    已取消"; return; }
+    if [[ ! "$cf" =~ ^[Yy]$ ]]; then
+        echo "    已取消"
+        LAST_MSG="卸载内核: 已取消"
+        return
+    fi
     echo "==> 卸载 XanMod 内核"
     PKGS=$(dpkg -l | grep "^ii.*xanmod" | awk '{print $2}')
     # shellcheck disable=SC2086
     DEBIAN_FRONTEND=noninteractive apt-get purge -y $PKGS
     update-grub 2>/dev/null || true
     echo "    卸载完成，重启后生效"
+    LAST_MSG="卸载内核: 完成，重启后生效"
 }
 
 step_uninstall_self() {
@@ -158,6 +178,10 @@ while true; do
     fi
     echo " 系统版本: $PRETTY"
     echo "========================================"
+    if [ -n "$LAST_MSG" ]; then
+        echo " 上一步: $LAST_MSG"
+        echo "----------------------------------------"
+    fi
 
     # 各步骤完成状态
     s1=""; is_deps_done && s1=" (已完成)"

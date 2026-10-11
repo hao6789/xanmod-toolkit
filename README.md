@@ -5,7 +5,7 @@ XanMod 内核一键安装脚本，自动检测 CPU 指令集等级和系统版�
 ## 快捷安装
 
 ```bash
-sudo curl -sSL https://raw.githubusercontent.com/hao6789/xm/main/install-xanmod.sh -o /usr/local/bin/xm \
+sudo curl -sSL https://raw.githubusercontent.com/hao6789/xanmod-toolkit/main/install-xanmod.sh -o /usr/local/bin/xm \
   && sudo chmod +x /usr/local/bin/xm
 ```
 

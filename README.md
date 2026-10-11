@@ -1,4 +1,4 @@
-# xm
+# xanmod-toolkit
 
 XanMod 内核一键安装脚本，自动检测 CPU 指令集等级和系统版本。
 

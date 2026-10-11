@@ -37,8 +37,8 @@ step_install_deps() {
 }
 
 step_add_repo() {
-    # 前置: 依赖工具
-    command -v wget >/dev/null 2>&1 || step_install_deps
+    # 前置: 依赖工具 (与 is_deps_done 保持一致，两个都要有)
+    command -v wget >/dev/null 2>&1 && command -v gpg >/dev/null 2>&1 || step_install_deps
     echo "==> 添加 XanMod APT 仓库"
     mkdir -p /etc/apt/keyrings
     if [ ! -f /etc/apt/keyrings/xanmod-archive-keyring.gpg ]; then

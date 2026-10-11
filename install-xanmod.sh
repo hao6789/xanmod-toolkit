@@ -86,7 +86,7 @@ step_install_kernel() {
 }
 
 step_check_update() {
-    if ! dpkg -l | grep -q "linux-image.*xanmod"; then
+    if ! dpkg -l | grep -q "^ii.*linux-image.*xanmod"; then
         echo "    未安装 XanMod 内核，无需检查更新"
         return
     fi
@@ -109,7 +109,7 @@ step_check_update() {
 # ---------- 状态检查 ----------
 is_deps_done() { command -v wget >/dev/null 2>&1 && command -v gpg >/dev/null 2>&1; }
 is_repo_done() { [ -f /etc/apt/sources.list.d/xanmod-release.list ]; }
-is_kernel_done() { dpkg -l 2>/dev/null | grep -q "linux-image.*xanmod"; }
+is_kernel_done() { dpkg -l 2>/dev/null | grep -q "^ii.*linux-image.*xanmod"; }
 
 # ---------- 主菜单 ----------
 while true; do

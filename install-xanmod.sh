@@ -170,9 +170,9 @@ while true; do
     echo "  2) 添加 XanMod APT 仓库$s2"
     echo "  3) 安装 XanMod 内核$s3"
     echo "  4) 检查内核更新"
-    echo "  5) 卸载 XanMod 内核"
-    echo "  6) 卸载本脚本"
-    echo "  7) 重启系统"
+    echo "  5) 重启系统"
+    echo "  6) 卸载 XanMod 内核"
+    echo "  7) 卸载本脚本"
     echo "  0) 退出"
     read -rp "输入选项 [0-7]: " opt
     case "$opt" in
@@ -180,9 +180,9 @@ while true; do
         2) step_add_repo ;;
         3) step_install_kernel ;;
         4) step_check_update ;;
-        5) step_uninstall_kernel ;;
-        6) step_uninstall_self ;;
-        7) reboot ;;
+        5) reboot ;;
+        6) step_uninstall_kernel ;;
+        7) step_uninstall_self ;;
         0) exit 0 ;;
         *) echo "无效选项" ;;
     esac

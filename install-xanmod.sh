@@ -50,6 +50,8 @@ step_install_deps() {
 }
 
 step_add_repo() {
+    # 前置: 依赖工具
+    command -v wget >/dev/null 2>&1 || step_install_deps
     echo "==> 添加 XanMod APT 仓库"
     mkdir -p /etc/apt/keyrings
     if [ ! -f /etc/apt/keyrings/xanmod-archive-keyring.gpg ]; then
@@ -62,6 +64,11 @@ step_add_repo() {
 }
 
 step_install_kernel() {
+    # 前置: 仓库
+    if [ ! -f /etc/apt/sources.list.d/xanmod-release.list ]; then
+        echo "    检测到仓库未添加，先添加仓库"
+        step_add_repo
+    fi
     if [ "$FORCE_LTS" -eq 1 ]; then
         PKG="linux-xanmod-lts"
         echo "    Debian 12 只有 LTS 版，已自动选择"
@@ -86,6 +93,10 @@ step_install_kernel() {
 }
 
 step_check_update() {
+    if ! dpkg -l | grep -q "linux-image.*xanmod"; then
+        echo "    未安装 XanMod 内核，无需检查更新"
+        return
+    fi
     echo "==> 检查 XanMod 内核更新"
     apt-get update -qq
     UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -i xanmod)

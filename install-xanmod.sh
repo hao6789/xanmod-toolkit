@@ -7,21 +7,8 @@ set -e
 [ -f /etc/debian_version ] || { echo "只支持 Debian/Ubuntu"; exit 1; }
 
 # ---------- 系统信息 ----------
-echo "========================================"
-echo " 当前内核: $(uname -r)"
-if uname -r | grep -q xanmod; then
-    echo " XanMod 内核: 已安装"
-else
-    if dpkg -l | grep -q "linux-image.*xanmod"; then
-        echo " XanMod 内核: 已安装但未运行 (重启后生效)"
-    else
-        echo " XanMod 内核: 未安装"
-    fi
-fi
 CODENAME=$(lsb_release -sc 2>/dev/null || grep ^VERSION_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '"')
 PRETTY=$(grep ^PRETTY_NAME= /etc/os-release | cut -d= -f2 | tr -d '"')
-echo " 系统版本: $PRETTY"
-echo "========================================"
 
 # ---------- 系统检查 ----------
 case "$CODENAME" in
@@ -115,6 +102,20 @@ step_check_update() {
 
 # ---------- 主菜单 ----------
 while true; do
+    clear
+    echo "========================================"
+    echo " 当前内核: $(uname -r)"
+    if uname -r | grep -q xanmod; then
+        echo " XanMod 内核: 已安装"
+    else
+        if dpkg -l | grep -q "linux-image.*xanmod"; then
+            echo " XanMod 内核: 已安装但未运行 (重启后生效)"
+        else
+            echo " XanMod 内核: 未安装"
+        fi
+    fi
+    echo " 系统版本: $PRETTY"
+    echo "========================================"
     echo ""
     echo "请选择操作:"
     echo "  1) 安装依赖工具"

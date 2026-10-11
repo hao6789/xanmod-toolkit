@@ -7,8 +7,8 @@ set -e
 [ -f /etc/debian_version ] || { echo "只支持 Debian/Ubuntu"; exit 1; }
 
 # ---------- 系统信息 ----------
-CODENAME=$(lsb_release -sc 2>/dev/null || grep ^VERSION_CODENAME= /etc/os-release | cut -d= -f2 | tr -d '"')
-PRETTY=$(grep ^PRETTY_NAME= /etc/os-release | cut -d= -f2 | tr -d '"')
+CODENAME=$(lsb_release -sc 2>/dev/null || grep ^VERSION_CODENAME= /etc/os-release 2>/dev/null | cut -d= -f2 | tr -d '"' || true)
+PRETTY=$(grep ^PRETTY_NAME= /etc/os-release 2>/dev/null | cut -d= -f2 | tr -d '"' || echo "未知系统")
 
 # ---------- 系统检查 ----------
 case "$CODENAME" in
@@ -18,7 +18,7 @@ case "$CODENAME" in
 esac
 
 # ---------- CPU 检测 ----------
-FLAGS=$(grep -m1 flags /proc/cpuinfo)
+FLAGS=$(grep -m1 flags /proc/cpuinfo 2>/dev/null || true)
 has() { echo "$FLAGS" | grep -qw "$1"; }
 LEVEL=1
 if has cx16 && has lahf_lm && has popcnt && has sse4_1 && has sse4_2 && has ssse3; then
@@ -92,7 +92,7 @@ step_check_update() {
     fi
     echo "==> 检查 XanMod 内核更新"
     apt-get update -qq
-    UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -i xanmod)
+    UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -i xanmod || true)
     if [ -z "$UPGRADABLE" ]; then
         echo "    已是最新版本，无可用更新"
         return
